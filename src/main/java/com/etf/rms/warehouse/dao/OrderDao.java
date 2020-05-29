@@ -14,12 +14,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  *
  * @author Pikacu
  */
-class OrderDao {
+public class OrderDao {
     
     private static final OrderDao instance = new OrderDao();
     
@@ -31,13 +32,13 @@ class OrderDao {
         return instance;
     }
    
-   protected Order find(int orderId,Connection con) throws SQLException{
+   public Order find(int orderId,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        Order order = null;
        
            
-       String sql="SELECT * FROM Orders where Orders_Id = ?";
+       String sql="SELECT * FROM Orders where Orders_id = ?";
        
        try{
        ps = con.prepareStatement(sql);
@@ -53,14 +54,46 @@ class OrderDao {
        }
        }
        finally{
-           ResourcesManager.closeResources(ps, rs);
+           ResourcesManager.closeResources(rs,ps);
        }
        return order;
        
        
    }
    
-   protected int insert(Order order,Connection con) throws SQLException{
+   
+   public ArrayList<Order> findAll(Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+       ArrayList<Order> list;
+       list = new ArrayList<Order>();
+       
+           
+       String sql="SELECT * FROM Orders";
+       
+       try{
+       ps = con.prepareStatement(sql);
+       
+       rs = ps.executeQuery();
+       //Orders_id	OrderDate	Customers_id	Emoplyees_id	Shippers_id
+       while(rs.next()){
+           Customer customer = CustomerDao.getInstance().find(rs.getInt("Customers_id"), con);
+           Employee employee = EmployeeDao.getInstance().find(rs.getInt("Employees_id"), con);
+           Shipper shipper = ShipperDao.getInstance().find(rs.getInt("Shippers_id"),con);
+           
+          Order order = new Order(rs.getInt("Orders_id"),rs.getString("OrderDate"),customer,employee,shipper);
+       list.add(order);
+       }
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return list;
+       
+       
+   }
+   
+   public int insert(Order order,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        int id=-1;
@@ -80,13 +113,13 @@ class OrderDao {
            id = rs.getInt(1);
        }
        finally{
-           ResourcesManager.closeResources(ps,rs);
+           ResourcesManager.closeResources(rs,ps);
        }
         return id;
        
    }
    
-   protected void update(Order order,Connection con) throws SQLException{
+   public void update(Order order,Connection con) throws SQLException{
        PreparedStatement ps = null;
        
        
@@ -102,16 +135,16 @@ class OrderDao {
            
        }
        finally{
-           ResourcesManager.closeResources(ps,null);
+           ResourcesManager.closeResources(null,ps);
        }
        
        
    }
    
-   protected void delete(int orderId,Connection con) throws SQLException{
+   public void delete(int orderId,Connection con) throws SQLException{
        PreparedStatement ps =null;
        
-       String sql = "DELETE FROM orders where Orders_Id=?";
+       String sql = "DELETE FROM orders where Orders_id=?";
        
        try{
         ps = con.prepareStatement(sql);
@@ -119,7 +152,7 @@ class OrderDao {
         ps.executeUpdate();
        }
        finally{
-           ResourcesManager.closeResources(ps, null);
+           ResourcesManager.closeResources(null,ps);
        }
    }
     

@@ -1,36 +1,32 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.etf.rms.warehouse.dao;
-
-import com.mysql.jdbc.Connection;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- *
- * @author Pikacu
- */
+import com.etf.rms.warehouse.exception.ResourceException;
 public class ResourcesManager {
-/**
- * Ova klasa treba da implementira:
- * getConnection();
- * closeConnectiol(Connection con);
- * rollbackTransaction(Connection con);
- * closeResources(PrepairedStatemant ps, ResultSet rs);
- */
-    //staticki inicijalizatorski blok...
+
+    
+    
+    /*
+    Ovo se zove staticki inicijalizatorski blok...
+    On se zapravo pozove pri inicijalizaciji klase pre nego sto se napravi bilo kakav objekat.
+    U javi klase poziva Class Loader kada pokrenes program...
+    */
     static {
+    
         try {
+            
             /*
             forName("com.mysql.jdbc.Driver")-inicijaliziju klasu com.mqsql.jdbc.Driver
             U sustini Class.forName("X"); vraca objekat klase Class koji je povezan sa imenom X, a sama inicijalizacija klase X,
             mozemo reci da je sporedni efekat... 
-            Izgleda da ovo nije nepohdono visi... tako bar pise u dokumentaciji.
+            
+            ****OVO SAM PRONASAO U DOKUMENTACIJI> 
+                Applications no longer need to explicitly load JDBC drivers using Class.forName().
+            Existing programswhich currently load JDBC drivers using Class.forName() will continue to work withoutmodification. *****
             */
             Class.forName("com.mysql.jdbc.Driver");
         } catch (Exception ex) {
@@ -38,30 +34,41 @@ public class ResourcesManager {
         }
     }
 
-public static Connection getConnection() throws SQLException{
-       
-    Connection con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3308/warehouse?user=root&password=");
-    
-    return con;
-    
-}    
+    //Ova metoda pravi konekciju na bazu
+    public static Connection getConnection() throws SQLException {
+        Connection con = (Connection)DriverManager.getConnection("jdbc:mysql://localhost:3308/warehousedb?user=root&password=");
+        System.out.println("Konekcija na bazu-USPESNA");
+        return con;
+    }
 
-public static void closeConnection(Connection con) throws SQLException{
-    
-    if(con!=null)
-    con.close();
-}
+    //zatvaranje ResultSet-a i PreparedStatemant-a
+    public static void closeResources(ResultSet resultSet, PreparedStatement preparedStatement) throws SQLException {
+        if (resultSet != null) {
+            resultSet.close();
+        }
+        if (preparedStatement != null) {
+            preparedStatement.close();
+        }
+    }
 
-public static void closeResources(PreparedStatement ps,ResultSet rs) throws SQLException{
-    if(ps!=null)
-        ps.close();
-    if(rs!=null)
-        rs.close();
-}
-
-public static void rollbackTransaction(Connection con) throws SQLException{
-    if(con!=null)
-        con.rollback();
-}
-
+    //Zatvaranje konekcije na bazu
+    public static void closeConnection(Connection con) throws ResourceException {
+        if (con != null) {
+            try {
+                con.close();
+            } catch (SQLException ex) {
+                throw new ResourceException("Failed to close database connection.", ex);
+            }
+        }
+    }
+    //vracanje transakcije. Vracanje na prethodno stanje baze podataka.
+    public static void rollbackTransactions(Connection con) throws ResourceException {
+        if (con != null) {
+            try {
+                con.rollback();
+            } catch (SQLException ex) {
+                throw new ResourceException("Failed to rollback database transactions.", ex);
+            }
+        }
+    }
 }

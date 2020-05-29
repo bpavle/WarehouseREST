@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  *
@@ -29,13 +30,13 @@ public class OrderDetailsDao {
         return instance;
     }
    
-   protected OrderDetails find(int orderDetailsId,Connection con) throws SQLException{
+   public OrderDetails find(int orderDetailsId,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        OrderDetails orderDetails = null;
        
            
-       String sql="SELECT * FROM OrderDetails where OrderDetails_Id = ?";
+       String sql="SELECT * FROM OrderDetails where OrderDetails_id = ?";
        
        try{
        ps = con.prepareStatement(sql);
@@ -49,24 +50,55 @@ public class OrderDetailsDao {
        }
        }
        finally{
-           ResourcesManager.closeResources(ps, rs);
+           ResourcesManager.closeResources(rs,ps);
        }
        return orderDetails;
        
        
    }
    
-   protected int insert(OrderDetails orderDetails,Connection con) throws SQLException{
+   
+   public ArrayList<OrderDetails> findAll(Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+       ArrayList<OrderDetails> list;
+       list = new ArrayList<OrderDetails>();
+       
+           
+       String sql="SELECT * FROM OrderDetails";
+       
+       try{
+       ps = con.prepareStatement(sql);
+     
+       rs = ps.executeQuery();
+       
+       while(rs.next()){
+           Order order = OrderDao.getInstance().find(rs.getInt("Orders_id"),con);
+           Product product = ProductDao.getInstance().find(rs.getInt("Products_id"),con);
+           OrderDetails orderDetails = new OrderDetails(rs.getInt("OrderDetails_id"),order,product,rs.getInt("Quantity"));
+       list.add(orderDetails);
+       }
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return list;
+       
+       
+   }
+   
+   
+   public int insert(OrderDetails orderDetails,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        int id=-1;
-       String sql = "INSERT INTO orderDetailss(OrderDetails_id,Products_id,Orders_id,Quantity) VALUES(?,?,?,?)";
+       String sql = "INSERT INTO orderDetails(Products_id,Orders_id,Quantity) VALUES(?,?,?)";
        try{
            ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-           ps.setInt(1, orderDetails.getOrderDetailsId());
-           ps.setInt(2,orderDetails.getProduct().getProductId());
-           ps.setInt(3, orderDetails.getOrder().getOrderId());
-           ps.setInt(4, orderDetails.getQuantity());
+           //ps.setInt(1, orderDetails.getOrderDetailsId());
+           ps.setInt(1,orderDetails.getProduct().getProductId());
+           ps.setInt(2, orderDetails.getOrder().getOrderId());
+           ps.setInt(3, orderDetails.getQuantity());
           
            ps.executeUpdate();
            
@@ -77,13 +109,13 @@ public class OrderDetailsDao {
            id = rs.getInt(1);
        }
        finally{
-           ResourcesManager.closeResources(ps,rs);
+           ResourcesManager.closeResources(rs,ps);
        }
         return id;
        
    }
    
-   protected void update(OrderDetails orderDetails,Connection con) throws SQLException{
+   public void update(OrderDetails orderDetails,Connection con) throws SQLException{
        PreparedStatement ps = null;
        
        
@@ -99,16 +131,16 @@ public class OrderDetailsDao {
            
        }
        finally{
-           ResourcesManager.closeResources(ps,null);
+           ResourcesManager.closeResources(null,ps);
        }
        
        
    }
    
-   protected void delete(int orderDetailsId,Connection con) throws SQLException{
+   public void delete(int orderDetailsId,Connection con) throws SQLException{
        PreparedStatement ps =null;
        
-       String sql = "DELETE FROM OrderDetails where OrderDetails_d=?";
+       String sql = "DELETE FROM OrderDetails where OrderDetails_id=?";
        
        try{
         ps = con.prepareStatement(sql);
@@ -116,7 +148,7 @@ public class OrderDetailsDao {
         ps.executeUpdate();
        }
        finally{
-           ResourcesManager.closeResources(ps, null);
+           ResourcesManager.closeResources(null,ps);
        }
    }
 }

@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  *
@@ -28,13 +29,13 @@ public class SupplierDao {
         return instance;
     }
    
-   protected Supplier find(int supplierId,Connection con) throws SQLException{
+   public Supplier find(int supplierId,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        Supplier supplier = null;
        
            
-       String sql="SELECT * FROM Suppliers where suppliersId = ?";
+       String sql="SELECT * FROM Suppliers where Suppliers_id = ?";
        
        try{
        ps = con.prepareStatement(sql);
@@ -54,14 +55,50 @@ public class SupplierDao {
        }
        }
        finally{
-           ResourcesManager.closeResources(ps, rs);
+           ResourcesManager.closeResources(rs,ps);
        }
        return supplier;
        
        
    }
    
-   protected int insert(Supplier supplier,Connection con) throws SQLException{
+   
+   public ArrayList<Supplier> findAll(Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+       ArrayList<Supplier> list;
+       list = new ArrayList<Supplier>();
+       
+           
+       String sql="SELECT * FROM Suppliers";
+       
+       try{
+       ps = con.prepareStatement(sql);
+       
+       rs = ps.executeQuery();
+       //Suppliers_id	SuplierName	ContactPerson	Address	City	PostCode	Country	Phone
+       while(rs.next()){
+           Supplier supplier = new Supplier(rs.getInt("Suppliers_id"),
+                   rs.getString("SupplierName"),
+                   rs.getString("ContactPerson"),
+                   rs.getString("Address"),
+                   rs.getString("City"),
+                   rs.getString("PostCode"),
+                   rs.getString("Country"),
+                   rs.getString("Phone")
+           );
+           list.add(supplier);
+       }
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return list;
+       
+       
+   }
+   
+   public int insert(Supplier supplier,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        int id=-1;
@@ -84,20 +121,21 @@ public class SupplierDao {
            id = rs.getInt(1);
        }
        finally{
-           ResourcesManager.closeResources(ps,rs);
+           ResourcesManager.closeResources(rs,ps);
        }
         return id;
        
    }
    
-   protected void update(Supplier supplier,Connection con) throws SQLException{
+   public void update(Supplier supplier,Connection con) throws SQLException{
        PreparedStatement ps = null;
        
        
-       String sql = "UPDATE suppliers SET SupplierName=?,ContactPerson=?,Address=?,City=?,PostCode=?,Country=?,Phone=?";
+       String sql = "UPDATE suppliers SET SupplierName=?,ContactPerson=?,Address=?,City=?,PostCode=?,Country=?,Phone=? where Suppliers_id=?";
        
        try{
            ps = con.prepareStatement(sql);
+           ps.setInt(8,supplier.getSupplierId());
            ps.setString(1,supplier.getSupplierName());
            ps.setString(2,supplier.getContactPerson());
            ps.setString(3,supplier.getAddress());
@@ -109,16 +147,16 @@ public class SupplierDao {
            
        }
        finally{
-           ResourcesManager.closeResources(ps,null);
+           ResourcesManager.closeResources(null,ps);
        }
        
        
    }
    
-   protected void delete(int supplierId,Connection con) throws SQLException{
+   public void delete(int supplierId,Connection con) throws SQLException{
        PreparedStatement ps =null;
        
-       String sql = "DELETE FROM suppliers where suppliersId=?";
+       String sql = "DELETE FROM suppliers where Suppliers_id=?";
        
        try{
         ps = con.prepareStatement(sql);
@@ -126,7 +164,7 @@ public class SupplierDao {
         ps.executeUpdate();
        }
        finally{
-           ResourcesManager.closeResources(ps, null);
+           ResourcesManager.closeResources(null,ps);
        }
    }
     

@@ -7,10 +7,13 @@ package com.etf.rms.warehouse.dao;
 
 import com.etf.rms.warehouse.data.Employee;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 /**
  *
@@ -25,13 +28,13 @@ public class EmployeeDao {
     public static EmployeeDao getInstance(){
         return instance;
     }
-    protected Employee find(int employeeId,Connection con) throws SQLException{
+    public Employee find(int employeeId,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        Employee employee = null;
        
            
-       String sql="SELECT * FROM Employees where Employees_Id = ?";
+       String sql="SELECT * FROM Employees where Employees_id = ?";
        
        try{
        ps = con.prepareStatement(sql);
@@ -46,24 +49,59 @@ public class EmployeeDao {
        }
        }
        finally{
-           ResourcesManager.closeResources(ps, rs);
+           ResourcesManager.closeResources(rs,ps);
        }
        return employee;
        
        
    }
+    
+    
+    public ArrayList<Employee> findAll(Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+       ArrayList<Employee> list;
+       list = new ArrayList<Employee>();
+       
+           
+       String sql="SELECT * FROM Employees";
+       
+       try{
+       ps = con.prepareStatement(sql);
+       
+       rs = ps.executeQuery();
+       
+       while(rs.next()){
+          Employee employee = new Employee(rs.getInt("Employees_id"),
+                   rs.getString("LastName"),
+                   rs.getString("FirstName"),
+                   rs.getString("BirthDate"));
+          
+          list.add(employee);
+       }
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return list;
+       
+       
+   }
+    
    
-   protected int insert(Employee employee,Connection con) throws SQLException{
+   public int insert(Employee employee,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        int id=-1;
-       String sql = "INSERT INTO employees(FirstName,LastName,BirthDate) VALUES(?,?,?)";
+       String sql = "INSERT INTO employees(LastName,FirstName,BirthDate) VALUES(?,?,?)";
        try{
            ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-           ps.setString(1, employee.getFirstName());
-           ps.setString(2,employee.getLastName());
-           ps.setString(3,employee.getBirthDate());
+           ps.setString(1, employee.getLastName());
+           ps.setString(2,employee.getFirstName());
+           ps.setDate(3,Date.valueOf(employee.getBirthDate()));
            ps.executeUpdate();
+           
+           
            
            //GENRATED KEYS JEDINA NEJASNA STVAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            rs = ps.getGeneratedKeys();
@@ -72,13 +110,13 @@ public class EmployeeDao {
            id = rs.getInt(1);
        }
        finally{
-           ResourcesManager.closeResources(ps,rs);
+           ResourcesManager.closeResources(rs,ps);
        }
         return id;
        
    }
    
-   protected void update(Employee employee,Connection con) throws SQLException{
+   public void update(Employee employee,Connection con) throws SQLException{
        PreparedStatement ps = null;
        
        
@@ -93,16 +131,16 @@ public class EmployeeDao {
            
        }
        finally{
-           ResourcesManager.closeResources(ps,null);
+           ResourcesManager.closeResources(null,ps);
        }
        
        
    }
    
-   protected void delete(int employeeId,Connection con) throws SQLException{
+   public void delete(int employeeId,Connection con) throws SQLException{
        PreparedStatement ps =null;
        
-       String sql = "DELETE FROM employees where Employees_Id=?";
+       String sql = "DELETE FROM employees where Employees_id=?";
        
        try{
         ps = con.prepareStatement(sql);
@@ -110,7 +148,7 @@ public class EmployeeDao {
         ps.executeUpdate();
        }
        finally{
-           ResourcesManager.closeResources(ps, null);
+           ResourcesManager.closeResources(null,ps);
        }
    }
 }

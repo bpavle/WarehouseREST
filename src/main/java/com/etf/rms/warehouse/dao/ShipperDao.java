@@ -11,12 +11,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  *
  * @author Pikacu
  */
-class ShipperDao {
+public class ShipperDao {
  
     private static final ShipperDao instance = new ShipperDao();
     
@@ -28,7 +29,7 @@ class ShipperDao {
         return instance;
     }
    
-   protected Shipper find(int shipperId,Connection con) throws SQLException{
+   public Shipper find(int shipperId,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        Shipper shipper = null;
@@ -46,14 +47,40 @@ class ShipperDao {
        }
        }
        finally{
-           ResourcesManager.closeResources(ps, rs);
+           ResourcesManager.closeResources(rs,ps);
        }
        return shipper;
        
        
    }
    
-   protected int insert(Shipper shipper,Connection con) throws SQLException{
+   public ArrayList<Shipper> findAll(Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+       ArrayList<Shipper> list;
+       list = new ArrayList<Shipper>();
+           
+       String sql="SELECT * FROM Shippers";
+       
+       try{
+       ps = con.prepareStatement(sql);
+       
+       rs = ps.executeQuery();
+
+       while(rs.next()){
+       Shipper shipper = new Shipper(rs.getInt("Shippers_id"),rs.getString("ShipperName"),rs.getString("Phone"));
+       list.add(shipper);
+       }
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return list;
+       
+       
+   }
+   
+   public int insert(Shipper shipper,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        int id=-1;
@@ -71,13 +98,13 @@ class ShipperDao {
            id = rs.getInt(1);
        }
        finally{
-           ResourcesManager.closeResources(ps,rs);
+           ResourcesManager.closeResources(rs,ps);
        }
         return id;
        
    }
    
-   protected void update(Shipper shipper,Connection con) throws SQLException{
+   public void update(Shipper shipper,Connection con) throws SQLException{
        PreparedStatement ps = null;
        
        
@@ -91,13 +118,13 @@ class ShipperDao {
            
        }
        finally{
-           ResourcesManager.closeResources(ps,null);
+           ResourcesManager.closeResources(null,ps);
        }
        
        
    }
    
-   protected void delete(int shipperId,Connection con) throws SQLException{
+   public void delete(int shipperId,Connection con) throws SQLException{
        PreparedStatement ps =null;
        
        String sql = "DELETE FROM shippers where Shippers_id=?";
@@ -108,7 +135,7 @@ class ShipperDao {
         ps.executeUpdate();
        }
        finally{
-           ResourcesManager.closeResources(ps, null);
+           ResourcesManager.closeResources(null,ps);
        }
    }
     

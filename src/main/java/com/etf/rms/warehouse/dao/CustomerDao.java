@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  *
@@ -28,13 +29,13 @@ public class CustomerDao {
         return instance;
     }
    
-   protected Customer find(int customerId,Connection con) throws SQLException{
+   public Customer find(int customerId,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        Customer customer = null;
        
            
-       String sql="SELECT * FROM Customers where Customers_Id = ?";
+       String sql="SELECT * FROM Customers where Customers_id = ?";
        
        try{
        ps = con.prepareStatement(sql);
@@ -52,14 +53,56 @@ public class CustomerDao {
        }
        }
        finally{
-           ResourcesManager.closeResources(ps, rs);
+           ResourcesManager.closeResources(rs,ps);
        }
        return customer;
        
        
    }
    
-   protected int insert(Customer customer,Connection con) throws SQLException{
+   
+   
+   public ArrayList<Customer> findAll(Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+      
+       ArrayList<Customer> list;
+       
+       list = new ArrayList<Customer>();
+       String sql="SELECT * FROM Customers";
+       
+       try{
+       ps = con.prepareStatement(sql);
+       
+       rs = ps.executeQuery();
+       
+       while(rs.next()){
+           Customer customer = new Customer(rs.getInt("Customers_id"),
+                   rs.getString("CustomerName"),
+                   rs.getString("ContactPerson"),
+                   rs.getString("Address"),
+                   rs.getString("City"),
+                   rs.getString("PostCode"),
+                   rs.getString("Country"));
+           list.add(customer);
+       }
+       
+       
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return list;
+       
+       
+   }
+   
+   
+   
+   
+   
+   
+   public int insert(Customer customer,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        int id=-1;
@@ -81,13 +124,13 @@ public class CustomerDao {
            id = rs.getInt(1);
        }
        finally{
-           ResourcesManager.closeResources(ps,rs);
+           ResourcesManager.closeResources(rs,ps);
        }
         return id;
        
    }
    
-   protected void update(Customer customer,Connection con) throws SQLException{
+   public void update(Customer customer,Connection con) throws SQLException{
        PreparedStatement ps = null;
        
        
@@ -105,16 +148,16 @@ public class CustomerDao {
            
        }
        finally{
-           ResourcesManager.closeResources(ps,null);
+           ResourcesManager.closeResources(null,ps);
        }
        
        
    }
    
-   protected void delete(int customerId,Connection con) throws SQLException{
+   public void delete(int customerId,Connection con) throws SQLException{
        PreparedStatement ps =null;
        
-       String sql = "DELETE FROM customers where customersId=?";
+       String sql = "DELETE FROM customers where Customers_id=?";
        
        try{
         ps = con.prepareStatement(sql);
@@ -122,7 +165,7 @@ public class CustomerDao {
         ps.executeUpdate();
        }
        finally{
-           ResourcesManager.closeResources(ps, null);
+           ResourcesManager.closeResources(null,ps);
        }
    }
     

@@ -12,12 +12,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  *
  * @author Pikacu
  */
-class ProductDao {
+public class ProductDao {
     
     
     private static final ProductDao instance = new ProductDao();
@@ -30,13 +31,13 @@ class ProductDao {
         return instance;
     }
    
-   protected Product find(int productId,Connection con) throws SQLException{
+   public Product find(int productId,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        Product product = null;
        
            
-       String sql="SELECT * FROM Products where Products_Id = ?";
+       String sql="SELECT * FROM products where Products_id=?";
        
        try{
        ps = con.prepareStatement(sql);
@@ -46,7 +47,7 @@ class ProductDao {
        if(rs.next()){
            Supplier supplier = SupplierDao.getInstance().find(rs.getInt("Suppliers_id"), con);
            
-           product = new Product(productId,
+           product = new Product(rs.getInt("Products_id"),
                    rs.getString("ProductName"),
                    supplier,
                    rs.getString("ProductCategory"),
@@ -55,14 +56,83 @@ class ProductDao {
        
        }
        finally{
-           ResourcesManager.closeResources(ps, rs);
+           ResourcesManager.closeResources(rs,ps);
        }
        return product;
        
        
    }
    
-   protected int insert(Product product,Connection con) throws SQLException{
+   public ArrayList<Product> findAll(Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+       ArrayList<Product> list;
+       list = new ArrayList<Product>();
+       
+           
+       String sql="SELECT * FROM products";
+       
+       try{
+       ps = con.prepareStatement(sql);
+       
+       rs = ps.executeQuery();
+       
+       while(rs.next()){
+           Supplier supplier = SupplierDao.getInstance().find(rs.getInt("Suppliers_id"), con);
+           
+          Product product = new Product(rs.getInt("Products_id"),
+                   rs.getString("ProductName"),
+                   supplier,
+                   rs.getString("ProductCategory"),
+                   Double.parseDouble(rs.getString("PricePerUnit")));
+       
+       list.add(product);
+       }
+       
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return list;
+       
+       
+   }
+   
+   
+   
+   public Product find(String productName,Connection con) throws SQLException{
+       PreparedStatement ps=null;
+       ResultSet rs = null;
+       Product product = null;
+       
+           
+       String sql="SELECT * FROM products where ProductName = ?";
+       
+       try{
+       ps = con.prepareStatement(sql);
+       ps.setString(1, productName);
+       rs = ps.executeQuery();
+       
+       if(rs.next()){
+           Supplier supplier = SupplierDao.getInstance().find(rs.getInt("Suppliers_id"), con);
+           
+           product = new Product(rs.getInt("Products_id"),
+                   rs.getString("ProductName"),
+                   supplier,
+                   rs.getString("ProductCategory"),
+                   Double.parseDouble(rs.getString("PricePerUnit")));
+       }
+       
+       }
+       finally{
+           ResourcesManager.closeResources(rs,ps);
+       }
+       return product;
+       
+       
+   }
+   
+   public int insert(Product product,Connection con) throws SQLException{
        PreparedStatement ps=null;
        ResultSet rs = null;
        int id=-1;
@@ -84,17 +154,17 @@ class ProductDao {
            id = rs.getInt(1);
        }
        finally{
-           ResourcesManager.closeResources(ps,rs);
+           ResourcesManager.closeResources(rs,ps);
        }
         return id;
        
    }
    
-   protected void update(Product product,Connection con) throws SQLException{
+   public void update(Product product,Connection con) throws SQLException{
        PreparedStatement ps = null;
        
        
-       String sql = "UPDATE products SET ProductName=?,Suppliers_id=?,ProductCategory=?,PricePerUnit=?";
+       String sql = "UPDATE products SET ProductName=?,Suppliers_id=?,ProductCategory=?,PricePerUnit=? where Products_id=?";
        
        try{
            ps = con.prepareStatement(sql);
@@ -102,17 +172,18 @@ class ProductDao {
            ps.setInt(2,product.getSupplier().getSupplierId());
            ps.setString(3,product.getProductCategory());
            ps.setDouble(4,product.getPricePerUnit());
+           ps.setInt(5, product.getProductId());
            ps.executeUpdate();
            
        }
        finally{
-           ResourcesManager.closeResources(ps,null);
+           ResourcesManager.closeResources(null,ps);
        }
        
        
    }
    
-   protected void delete(int productId,Connection con) throws SQLException{
+   public void delete(int productId,Connection con) throws SQLException{
        PreparedStatement ps =null;
        
        String sql = "DELETE FROM products where Products_id=?";
@@ -123,7 +194,7 @@ class ProductDao {
         ps.executeUpdate();
        }
        finally{
-           ResourcesManager.closeResources(ps, null);
+           ResourcesManager.closeResources(null,ps);
        }
    }
     

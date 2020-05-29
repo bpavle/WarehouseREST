@@ -5,11 +5,17 @@
  */
 package com.etf.rms.warehouse.data;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Pikacu
  */
-public class Employee {
+public class Employee implements Serializable {
+    /**
+     * birthDate parameter use in YYYY-MM-DD format.
+     * @params birthDate use in YYYY-MM-DD format
+     */
    
     private int employeeId=-1;
     private String lastName;
@@ -21,6 +27,10 @@ public class Employee {
 
     
      public Employee(int employeeId,String lastName, String firstName, String birthDate) {
+      /***
+       * @params birthDate use in YYYY-MM-DD format
+         */
+         
         this.employeeId=employeeId;
          this.lastName = lastName;
         this.firstName = firstName;

@@ -5,11 +5,13 @@
  */
 package com.etf.rms.warehouse.data;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Pikacu
  */
-public class OrderDetails {
+public class OrderDetails implements Serializable{
 private int orderDetailsId=-1;
 private Order order;
 private Product product;

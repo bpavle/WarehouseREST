@@ -5,11 +5,13 @@
  */
 package com.etf.rms.warehouse.data;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Pikacu
  */
-public class Supplier {
+public class Supplier implements Serializable {
     
      private int supplierId=-1;
      private String supplierName;

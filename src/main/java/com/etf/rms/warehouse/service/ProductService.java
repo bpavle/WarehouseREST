@@ -5,11 +5,9 @@
  */
 package com.etf.rms.warehouse.service;
 
-import com.etf.rms.warehouse.dao.CustomerDao;
 import com.etf.rms.warehouse.dao.ProductDao;
 import com.etf.rms.warehouse.dao.ResourcesManager;
 import com.etf.rms.warehouse.dao.SupplierDao;
-import com.etf.rms.warehouse.data.Customer;
 import com.etf.rms.warehouse.data.Product;
 import com.etf.rms.warehouse.data.Supplier;
 import com.etf.rms.warehouse.exception.ResourceException;
@@ -54,7 +52,7 @@ public class ProductService {
         
     }
     
-    public Product findPorduct(int productId) throws SQLException{
+    public Product findProduct(int productId) throws SQLException{
         Connection con = null;
         
             con = ResourcesManager.getConnection();
@@ -86,7 +84,7 @@ public class ProductService {
        return list;
    }
 
-    public void deletePorduct(int productId) throws SQLException, ResourceException{
+    public void deleteProduct(int productId) throws SQLException, ResourceException{
         Connection con = null;
         
             con = ResourcesManager.getConnection();

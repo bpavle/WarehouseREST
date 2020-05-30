@@ -35,7 +35,7 @@ public class SupplierDao {
        Supplier supplier = null;
        
            
-       String sql="SELECT * FROM Suppliers where Suppliers_id = ?";
+       String sql="SELECT * FROM Suppliers where Suppliers_id =?";
        
        try{
        ps = con.prepareStatement(sql);
@@ -43,7 +43,7 @@ public class SupplierDao {
        rs = ps.executeQuery();
        //Suppliers_id	SuplierName	ContactPerson	Address	City	PostCode	Country	Phone
        if(rs.next()){
-           supplier = new Supplier(supplierId,
+           supplier = new Supplier(rs.getInt("Suppliers_id"),
                    rs.getString("SupplierName"),
                    rs.getString("ContactPerson"),
                    rs.getString("Address"),
